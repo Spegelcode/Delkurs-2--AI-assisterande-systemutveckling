@@ -25,6 +25,13 @@ def _kapa(x):
     return Decimal(int(x * 100)) / 100
 
 
+def _calculate_totals(summa):
+    net = _kapa(summa)
+    vat = _kapa(net * MOMS / 100)
+    total = net + vat
+    return Pris(net, vat, total)
+
+
 def calc_price(order_id):
     cur = conn.cursor()
     cur.execute("select discount_code from orders where id = %s", (order_id,))
@@ -47,18 +54,16 @@ def calc_price(order_id):
         if r:
             summa = summa - summa * r[0] / 100
 
-    net = _kapa(summa)
-    vat = _kapa(net * MOMS / 100)
-    total = net + vat
+    pris = _calculate_totals(summa)
 
     try:
         f = open(LOGG, "a")
-        f.write("%s %s %s\n" % (datetime.datetime.now().isoformat(), order_id, total))
+        f.write("%s %s %s\n" % (datetime.datetime.now().isoformat(), order_id, pris.total))
         f.close()
     except:
         pass
 
-    return Pris(net, vat, total)
+    return pris
 
 
 if __name__ == "__main__":
