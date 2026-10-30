@@ -11,7 +11,7 @@
       "Bash(npm run format:check)",
       "Bash(npm run test:legacy)",
       "Bash(git status*)",
-      "Bash(git diff*)"
+    "Bash(git diff*)"
     ],
     "ask": [
       "Bash(npm install*)",
@@ -51,6 +51,15 @@
           {
             "type": "command",
             "command": "node scripts/hooks/check-sensitive-path.js"
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node scripts/hooks/check-command-safety.js"
           }
         ]
       }

@@ -41,7 +41,8 @@ curl http://localhost:3000/orders/1042/price -H "X-Customer-Id: 1"
 | Kommando | Vad det gör |
 |---|---|
 | `npm test` | Kör API-testerna mot testdatabasen. |
-| `npm run test:legacy` | Kör Python-testerna (finns inga än). |
+| `npm run test:legacy` | Kör Python-testerna för legacy-modulen. |
+| `npm run verify` | Kör lint, formattering, typkontroll, Jest och legacy-tester. |
 | `npm run lint` | ESLint med grundkonfiguration. |
 | `npm run typecheck` | TypeScript utan att bygga. |
 | `npm run format` | Formaterar koden med Prettier. |

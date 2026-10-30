@@ -1,0 +1,12 @@
+#!/bin/sh
+set -eu
+
+message_file="$1"
+message=$(sed -n 's/[[:space:]]//gp' "$message_file" | head -n 1)
+
+if [ "${#message}" -lt 10 ]; then
+  echo "[commit-msg] Commit stoppad: första raden måste beskriva ändringen med minst 10 tecken." >&2
+  exit 1
+fi
+
+echo "[commit-msg] Commitmeddelande godkänt."
