@@ -2,6 +2,12 @@
 
 Övningsprojektet för delkursen *AI-assisterad systemutveckling*. Det är kodbasen du bygger din rigg för i kursprojektet.
 
+## Lokal kurskopia
+
+Den här kopian används fristående i kursprojektet. Den har ingen konfigurerad
+Git-remote och ska därför inte pusha till eller arbeta mot något externt repo.
+Git används fortfarande lokalt för commits, historik och spårbarhet.
+
 Projektet innehåller två delar med olika ålder och kvalitet:
 
 - **REST-API:t** för kunder och beställningar, i TypeScript med Express och PostgreSQL. Det har tester och följer kodstandarden i `docs/standard.md` någorlunda.
