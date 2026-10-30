@@ -13,8 +13,25 @@ function parseId(raw: string): number | null {
 
 // Lägg en beställning.
 orders.post("/orders", requireCustomer, async (req, res) => {
-  const result = await createOrder((req as AuthedRequest).customerId, req.body ?? {});
-  sendResult(res, result, 201);
+  const idempotencyKey = req.get("Idempotency-Key")?.trim();
+  if (!idempotencyKey || idempotencyKey.length > 255) {
+    sendError(res, {
+      code: "invalid_input",
+      message: "Idempotency-Key krävs och får vara högst 255 tecken.",
+    });
+    return;
+  }
+
+  const result = await createOrder(
+    (req as AuthedRequest).customerId,
+    req.body ?? {},
+    idempotencyKey,
+  );
+  if (!result.ok) {
+    sendError(res, result.error);
+    return;
+  }
+  res.status(result.value.created ? 201 : 200).json(result.value.order);
 });
 
 // Hämta en egen beställning med rader.

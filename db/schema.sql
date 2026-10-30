@@ -2,6 +2,7 @@
 -- Schemat har vuxit under flera år och har kända svagheter. De är en del av övningen.
 
 DROP TABLE IF EXISTS order_lines;
+DROP TABLE IF EXISTS order_idempotency;
 DROP TABLE IF EXISTS orders;
 DROP TABLE IF EXISTS discounts;
 DROP TABLE IF EXISTS customers;
@@ -27,6 +28,14 @@ CREATE TABLE orders (
   status         TEXT NOT NULL DEFAULT 'new',
   discount_code  TEXT,
   created_at     TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE TABLE order_idempotency (
+  idempotency_key TEXT PRIMARY KEY,
+  customer_id     INTEGER NOT NULL REFERENCES customers(id),
+  request_hash    TEXT NOT NULL,
+  order_id        INTEGER REFERENCES orders(id),
+  created_at      TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
 CREATE TABLE order_lines (

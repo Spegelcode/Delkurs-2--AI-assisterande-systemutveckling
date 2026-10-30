@@ -8,9 +8,19 @@ Alla anrop utom `POST /customers` och `/health` kräver headern `X-Customer-Id` 
 | `POST /customers` | Registrera en kund. Body: `{ name, email }`. | 201, 400 |
 | `GET /customers/me` | Den inloggade kunden. | 200, 401, 404 |
 | `GET /customers/me/orders` | Den inloggade kundens beställningar, nyast först. | 200, 401 |
-| `POST /orders` | Lägg en beställning. Body: `{ lines: [{ product, quantity, unitPrice }], discountCode? }`. | 201, 400, 401 |
+| `POST /orders` | Lägg en beställning. Kräver `Idempotency-Key` (1–255 tecken). Body: `{ lines: [{ product, quantity, unitPrice }], discountCode? }`. | 201, 200 vid identiskt omförsök, 400, 401, 409 |
 | `GET /orders/:id` | En egen beställning med rader. | 200, 400, 401, 403, 404 |
 | `GET /orders/:id/price` | Pris för en egen beställning: `{ net, vat, total }`. Räknas av den äldre modulen. | 200, 400, 401, 403, 404 |
+
+## Idempotens för `POST /orders`
+
+Klienten ska skicka en unik `Idempotency-Key` för varje logisk beställning och
+återanvända samma nyckel vid ett nätverksomförsök.
+
+- Första lyckade requesten svarar `201` och skapar ordern.
+- Samma kund, samma nyckel och samma innehåll svarar `200` med samma order.
+- Samma nyckel med annat innehåll eller från annan kund svarar `409`.
+- Saknad, tom eller för lång nyckel svarar `400`.
 
 ## Den äldre modulen
 

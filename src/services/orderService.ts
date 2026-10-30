@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { db } from "../db";
 import { Result, ok, err } from "../result";
 
@@ -10,6 +11,8 @@ export type Order = {
   discountCode: string | null;
   lines: { product: string; quantity: number; unitPrice: string }[];
 };
+
+export type OrderCreation = { order: Order; created: boolean };
 
 function validateLines(lines: unknown): Result<OrderLineInput[]> {
   if (!Array.isArray(lines) || lines.length === 0) {
@@ -29,17 +32,57 @@ function validateLines(lines: unknown): Result<OrderLineInput[]> {
   return ok(lines as OrderLineInput[]);
 }
 
+function requestHash(lines: OrderLineInput[], discountCode: string | null): string {
+  const normalized = JSON.stringify({ lines, discountCode });
+  return createHash("sha256").update(normalized).digest("hex");
+}
+
 export async function createOrder(
   customerId: number,
   input: { lines?: unknown; discountCode?: unknown },
-): Promise<Result<Order>> {
+  idempotencyKey: string,
+): Promise<Result<OrderCreation>> {
   const lines = validateLines(input.lines);
   if (!lines.ok) return lines;
   const discountCode = typeof input.discountCode === "string" ? input.discountCode : null;
+  const hash = requestHash(lines.value, discountCode);
 
   const client = await db.connect();
   try {
     await client.query("BEGIN");
+    const claim = await client.query(
+      `INSERT INTO order_idempotency (idempotency_key, customer_id, request_hash)
+       VALUES ($1, $2, $3)
+       ON CONFLICT (idempotency_key) DO NOTHING
+       RETURNING idempotency_key`,
+      [idempotencyKey, customerId, hash],
+    );
+
+    if (claim.rowCount === 0) {
+      const existing = await client.query(
+        `SELECT customer_id AS "customerId", request_hash AS "requestHash", order_id AS "orderId"
+           FROM order_idempotency
+          WHERE idempotency_key = $1
+          FOR UPDATE`,
+        [idempotencyKey],
+      );
+      const record = existing.rows[0];
+      if (
+        !record ||
+        record.customerId !== customerId ||
+        record.requestHash !== hash ||
+        record.orderId === null
+      ) {
+        await client.query("ROLLBACK");
+        return err("conflict", "Idempotency-Key har redan använts för en annan beställning.");
+      }
+
+      await client.query("COMMIT");
+      const order = await getOrder(record.orderId, customerId);
+      if (!order.ok) return err(order.error.code, order.error.message);
+      return ok({ order: order.value, created: false });
+    }
+
     const order = await client.query(
       "INSERT INTO orders (customer_id, discount_code) VALUES ($1, $2) RETURNING id",
       [customerId, discountCode],
@@ -51,10 +94,16 @@ export async function createOrder(
         [orderId, line.product, line.quantity, line.unitPrice],
       );
     }
+    await client.query("UPDATE order_idempotency SET order_id = $2 WHERE idempotency_key = $1", [
+      idempotencyKey,
+      orderId,
+    ]);
     await client.query("COMMIT");
-    return getOrder(orderId, customerId);
+    const created = await getOrder(orderId, customerId);
+    if (!created.ok) return err(created.error.code, created.error.message);
+    return ok({ order: created.value, created: true });
   } catch (e) {
-    await client.query("ROLLBACK");
+    await client.query("ROLLBACK").catch(() => undefined);
     throw e;
   } finally {
     client.release();
