@@ -12,7 +12,7 @@ import price_calc  # noqa: E402
 def test_existing_order_without_discount_keeps_current_totals(tmp_path, monkeypatch):
     monkeypatch.setattr(price_calc, "LOGG", str(tmp_path / "price.log"))
 
-    result = price_calc.calc_price(1042)
+    result = price_calc.calc_price(1042, price_calc.conn)
 
     assert result.net == Decimal("950")
     assert result.vat == Decimal("237.5")

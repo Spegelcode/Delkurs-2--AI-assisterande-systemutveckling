@@ -32,8 +32,9 @@ def _calculate_totals(summa):
     return Pris(net, vat, total)
 
 
-def calc_price(order_id):
-    cur = conn.cursor()
+def calc_price(order_id, connection=None):
+    db = conn if connection is None else connection
+    cur = db.cursor()
     cur.execute("select discount_code from orders where id = %s", (order_id,))
     rad = cur.fetchone()
     if rad == None:
