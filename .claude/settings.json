@@ -1,0 +1,69 @@
+{
+  "permissions": {
+    "allow": [
+      "Read",
+      "Grep",
+      "Glob",
+      "Bash(npm test)",
+      "Bash(npm run verify)",
+      "Bash(npm run lint)",
+      "Bash(npm run typecheck)",
+      "Bash(npm run format:check)",
+      "Bash(npm run test:legacy)",
+      "Bash(git status*)",
+      "Bash(git diff*)"
+    ],
+    "ask": [
+      "Bash(npm install*)",
+      "Bash(docker compose*)",
+      "Bash(git commit*)",
+      "Edit(db/**)",
+      "Write(db/**)",
+      "Edit(.claude/**)",
+      "Write(.claude/**)"
+    ],
+    "deny": [
+      "Bash(git push*)",
+      "Bash(git remote add*)",
+      "Read(.env)",
+      "Edit(.env)",
+      "Write(.env)",
+      "Read(production/**)",
+      "Write(production/**)",
+      "Edit(production/**)"
+    ]
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node scripts/hooks/session-state.js --load"
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node scripts/hooks/check-sensitive-path.js"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node scripts/hooks/session-state.js --save"
+          }
+        ]
+      }
+    ]
+  }
+}

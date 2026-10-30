@@ -1,0 +1,6 @@
+#!/bin/sh
+set -eu
+
+echo "[pre-commit] Kör projektets verifiering..."
+node scripts/hooks/check-test-integrity.js
+npm run verify
