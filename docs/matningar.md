@@ -59,5 +59,7 @@ den siffran.
 
 ## Begränsning
 
-Ingen riktig kursledar-PR har funnits i workspace under mätningen. Därför är
-den separata PR-granskningen markerad som kvarstående i kursdokumentationen.
+PR 214 granskades lokalt efter att seminariegrenen hämtats. Kontrollerna gav
+25/25 gröna Jest-tester, medan `npm run verify` stoppades av Prettier i fyra
+PR-filer. Den manuella granskningen hittade dessutom säkerhets-, struktur- och
+kodstandardbrister. Se `docs/review-pr-214-returer.md`.

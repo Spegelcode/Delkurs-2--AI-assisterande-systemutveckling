@@ -4,4 +4,5 @@ dist/
 __pycache__/
 .pytest_cache/
 src/legacy/price_calc.log
+tmp/
 .claude/settings.local.json

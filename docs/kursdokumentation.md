@@ -177,16 +177,17 @@ antaganden och om en arkitekturell förändring är säker.
 
 ## Granskning av agentgenererad kod
 
-Den separata pull request som kursledaren ska dela ut fanns inte i den lokala
-workspacen när dokumentet skrevs. Därför ska följande fyllas i efter att PR:n
-har gjorts tillgänglig; [review-order-idempotency.md](./review-order-idempotency.md)
-är den interna granskningen av vår egen implementation och ersätter inte PR:n.
+PR 214 hämtades till den lokala granskningsgrenen och granskades utan att
+bristerna rättades eller grenen mergades. Den fullständiga rapporten finns i
+[review-pr-214-returer.md](./review-pr-214-returer.md). Den interna
+[review-order-idempotency.md](./review-order-idempotency.md) är separat och
+gäller vår egen implementation.
 
 | Typ | Rad/fynd | Varför | Kontroll |
 |---|---|---|---|
-| Säkerhet | fyll i från kursledarens PR | SQL, ägarskap, hemlighet eller dataläckage | security-reviewer, command/path-guard eller test |
-| Struktur | fyll i från kursledarens PR | ansvar, transaktion eller felmodell | `/review` och mänsklig review |
-| Kodstandard | fyll i från kursledarens PR | lint, format, typ eller parametrisering | `npm run verify` och pre-commit |
+| Säkerhet | `src/routes/returns.ts:12`, `src/services/returnService.ts:3` | Body används för kundidentitet och en API-nyckel är hårdkodad. | `/review` med security-reviewer och mänsklig granskning |
+| Struktur | `src/routes/returns.ts:16-17`, `src/services/returnService.ts:34-36` | Alla fel blir 500 och flera returer kan skapas för samma order. | `/review` och negativa/idempotens-tester |
+| Kodstandard | `src/services/returnService.ts:6-8,27-30` | snake_case i JSON och flyttal används för pengar. | `/review` och `docs/standard.md` |
 
 ## Modernisering
 
@@ -207,10 +208,10 @@ Databasens expand/contract- och rollbackplan finns i
 
 ## Mätningar
 
-Se [matningar.md](./matningar.md). Viktigaste siffrorna är 22/22 Jest-tester,
-6/6 Python-tester, cirka 2,4 sekunder för senaste fulla verifiering och 97
-sekunder mellan de fyra moderniseringscommitsen. Tokens och kronor är inte
-exponerade av verktyget och anges därför inte som om de vore uppmätta.
+Se [matningar.md](./matningar.md). Viktigaste siffrorna är 22/22 Jest-tester
+på main, 25/25 på PR 214, 6/6 Python-tester och 97 sekunder mellan de fyra
+moderniseringscommitsen. Tokens och kronor är inte exponerade av verktyget och
+anges därför inte som om de vore uppmätta.
 
 ## Riggen i ett team
 
@@ -242,6 +243,6 @@ sessionsloggarna och `npm run verify` med. Endast modellnamn och adapter behöve
 ## Lärdomar
 
 Med en extra vecka skulle jag först lägga till automatisk mätning av tokens,
-modellkostnad och väggtid per arbetspass, därefter ta emot kursledarens PR och
-fylla den separata reviewtabellen. Jag skulle också göra migrationsplanen
-körbar i en isolerad testdatabas i stället för att bara dokumentera stegen.
+modellkostnad och väggtid per arbetspass. Jag skulle också göra
+migrationsplanen körbar i en isolerad testdatabas i stället för att bara
+dokumentera stegen.
