@@ -2,7 +2,7 @@
 
 ## Grunduppgifter
 
-- **Namn:** fyll i före PDF-inlämning
+- **Namn:** Leo Spegel
 - **Kodbas:** övningsprojektets TypeScript-REST-API med PostgreSQL och äldre
   Python-modul för prisberäkning
 - **Repo och tagg:** lokal Git-kopia på `main`; taggen `inlamning` skapas först
